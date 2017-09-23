@@ -59,6 +59,70 @@ class SVGActor extends Actor {
 }
 
 
+class Hearts extends Actor {
+  constructor(x,y) {
+    super();
+    this.emitter = new PIXI.particles.Emitter(
+      this,
+      [ PIXI.Texture.fromImage('images/heart.png') ],
+
+      {
+	    "alpha": {
+		  "start": 0.5,
+		  "end": 0
+	    },
+	    "scale": {
+		  "start": 1,
+		  "end": 0.1,
+		  "minimumScaleMultiplier": 1
+	    },
+	    "color": {
+		  "start": "#e4f9ff",
+		  "end": "#40ff43"
+	    },
+	    "speed": {
+		  "start": 200,
+		  "end": 50,
+		  "minimumSpeedMultiplier": 1
+	    },
+	    "acceleration": {
+		  "x": 0,
+		  "y": 250
+	    },
+	    "maxSpeed": 0,
+	    "startRotation": {
+		  "min": 0,
+		  "max": 360
+	    },
+	    "noRotation": false,
+	    "rotationSpeed": {
+		  "min": 10,
+		  "max": 20
+	    },
+	    "lifetime": {
+		  "min": 0.2,
+		  "max": 2
+	    },
+	    "blendMode": "normal",
+	    "frequency": 0.01,
+	    "emitterLifetime": 5,
+	    "maxParticles": 200,
+	    "pos": {
+		  "x": x,
+		  "y": y
+	    },
+	    "addAtBack": false,
+	    "spawnType": "circle",
+	    "spawnCircle": {
+		  "x": 4,
+		  "y": 4,
+		  "r": 20
+	    }
+      });
+    this.emitter.playOnceAndDestroy();
+  }
+
+}
 
 class Stars extends Actor {
   constructor(x,y) {
@@ -238,6 +302,8 @@ class Board extends PIXI.Container {
   reset() {
     this.fairy.position.x = 0;
     this.evil.x = -50;
+    if (game.sounds.start)
+      game.sounds.start.play();
 
   }
 
@@ -256,9 +322,10 @@ class Board extends PIXI.Container {
   }
 
   win() {
-    if (game.sounds.start)
-      game.sounds.start.play();
-    this.reset();
+    if (game.sounds.win)
+      game.sounds.win.play();
+    game.hearts(768/2, 800/3);
+    setTimeout(() => this.reset(), 5000);
   }
 
   fail() {
@@ -362,15 +429,19 @@ class Game {
 
 
   load() {
+    this.sounds = {};
     var sounds = [
       {name:"start", url:"./sounds/322929__rhodesmas__success-04.wav" },
+      {name:"win", url:"./sounds/320653__rhodesmas__success-01.wav" },
       {name:"success", url:"./sounds/342751__rhodesmas__coins-purchase-3.wav" },
       {name:"alert", url:"./sounds/380265__rhodesmas__alert-02.wav" },
       {name:"fail", url:"./sounds/342756__rhodesmas__failure-01.wav" },
     ];
     PIXI.loader.add(sounds).load(() => {
-      this.sounds = {};
+
       sounds.forEach( s => this.sounds[s.name] = PIXI.audioManager.getAudio(s.name) );
+
+      this.sounds.success.volume = 0.5;
     });
   }
 
@@ -432,6 +503,10 @@ class Game {
 
   stars(x,y) {
     this.main.addChild(new Stars(x, y));
+  }
+
+  hearts(x,y) {
+    this.main.addChild(new Hearts(x, y));
   }
 
   update(t) {
