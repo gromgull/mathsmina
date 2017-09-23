@@ -12,7 +12,33 @@ function shuffle(a) {
     }
 }
 
-class Stars extends PIXI.Container {
+class Actor extends PIXI.Container {
+
+  update (t, delta) {
+  }
+}
+
+class SVGActor extends Actor {
+  constructor(Svg, anim) {
+    super();
+    this.svg = new Svg();
+    this.addChild(this.svg);
+    this.anim = anim;
+  }
+
+  update(t, delta) {
+    Object.keys(this.anim).forEach(k => {
+      if (!this.svg[k]) return;
+      Object.keys(this.anim[k]).forEach(prop => {
+        this.svg[k][prop] = this.anim[k][prop](t, delta, this.svg[k][prop]);
+      });
+    });
+  }
+}
+
+
+
+class Stars extends Actor {
   constructor(x,y) {
     super();
     this.emitter = new PIXI.particles.Emitter(
@@ -66,12 +92,9 @@ class Stars extends PIXI.Container {
 		  "r": 10
 		}
       });
-    this.emitter.emit = true;
+    this.emitter.playOnceAndDestroy();
   }
 
-  update (s) {
-    this.emitter.update(s);
-  }
 }
 
 class Board extends PIXI.Container {
@@ -266,8 +289,6 @@ class Game {
 
       this.main.x = ( width ) /2 - (1/window.devicePixelRatio)*this.main.width/2;
       this.main.y = (height ) /2 - (1/window.devicePixelRatio)*this.main.height/2;
-      // this.main.pivot.y = -(width * (1 / this.main.scale.y) / 2) * window.devicePixelRatio;
-      // this.main.pivot.x = -(width * (1 / this.main.scale.x) / 2) * window.devicePixelRatio;
 
       window.scrollTo(0, 0);
     };
@@ -287,30 +308,48 @@ class Game {
 
     this.main.addChild(new Board2());
 
-    this.elapsed = Date.now();
-    this.emitters = [];
 
+    this.last_time = 0;
+
+    this.actors = [];
+
+
+    var fairy = require('pixi-svg-loader!../images/fairy.svg');
+    this.add(new SVGActor(fairy, {
+          lwing: {
+            rotation: t => 0.3*Math.sin(t*0.01)
+          },
+          rwing: {
+            rotation: t => 0.3*Math.cos(t*0.01)
+          },
+    }));
+
+  }
+
+  add(actor) {
+    this.main.addChild(actor);
+    this.actors.push(actor);
   }
 
   stars(x,y) {
-    var s = new Stars(x, y);
-    this.main.addChild(s);
-    this.emitters.push(s);
-    s.emit();
+    this.main.addChild(new Stars(x, y));
   }
 
-  update() {
+  update(t) {
 
 	// Update the next frame
-	requestAnimationFrame(() => this.update());
+	requestAnimationFrame((t) => this.update(t));
 
-	var now = Date.now();
+    if (!this.last_time) {
+      this.last_time = t;
+      return;
+    }
 
-    this.emitters.forEach(emitter => emitter.update((now - this.elapsed) * 0.001));
+    var delta = (t - this.last_time);
+    this.last_time = t;
 
-	this.elapsed = now;
-
-	// renderer.render(stage);
+    this.actors.forEach(actor => actor.update(t, delta*0.001));
+	// this.app.renderer.render(this.main);
   }
 
 }
