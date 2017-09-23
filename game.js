@@ -88,13 +88,17 @@ class Board extends PIXI.Container {
     var onTextOver = function () { board.onTextOver(this); };
     var onTextOut = function () { board.onTextOut(this); };
 
+    // width is 768
+    // x margin is 34/34, grid is 700
+
     for ( i = 0 ; i<100 ; i++ ) {
       var t = new PIXI.Text(''+(1+i), style); //Object.assign({}, style));
+      t.resolution = 2;
       t.num = i;
       this.addChild(t);
       this.numbers[i] = t;
       t.hitArea = new PIXI.Rectangle(-35, -35, 70, 70);
-      t.x = 15+70*(1+i%10);
+      t.x = 0+70*(1+i%10);
       t.y = 15+70*Math.floor(1+i/10);
       t.anchor.set(0.5,0.5);
       t.interactive = true;
@@ -111,11 +115,11 @@ class Board extends PIXI.Container {
 
     for ( i = 0 ; i < 11 ; i++) {
       var y = 50+70*i;
-      gfx.moveTo(50, y);
-      gfx.lineTo(750, y);
+      gfx.moveTo(34, y);
+      gfx.lineTo(734, y);
     }
     for ( i = 0 ; i < 11 ; i++) {
-      var x = 50+70*i;
+      var x = 34+70*i;
       gfx.moveTo(x, 50);
       gfx.lineTo(x, 750);
     }
@@ -214,8 +218,9 @@ class Board2 extends Board {
 
 
 class Game {
-  constructor() {
 
+
+  load() {
     var sounds = [
       {name:"start", url:"./sounds/322929__rhodesmas__success-04.wav" },
       {name:"success", url:"./sounds/342751__rhodesmas__coins-purchase-3.wav" },
@@ -226,27 +231,53 @@ class Game {
       this.sounds = {};
       sounds.forEach( s => this.sounds[s.name] = PIXI.audioManager.getAudio(s.name) );
     });
+  }
+
+  constructor() {
+    this.load();
+
+    var targetWidth = 768;
+    var targetHeight = 1024;
 
 
-    this.app = new PIXI.Application({backgroundColor: 0x1099bb, resolution: 1, antialias: true});
+    var rendererResize = () => {
+      var width = window.innerWidth,
+          height = window.innerHeight,
+          canvas = this.app.view;
 
-    this.app.view.style.position = "absolute";
-    this.app.view.style.display = "block";
-    this.app.autoResize = true;
-    this.app.renderer.resize(window.innerWidth, window.innerHeight);
+      canvas.width = width * window.devicePixelRatio;
+      canvas.height = height * window.devicePixelRatio;
+      canvas.style.width = width + 'px';
+      canvas.style.height = height + 'px';
+
+      this.app.renderer.resize(canvas.width, canvas.height);
+
+      if (height / targetHeight > width / targetWidth) {
+        this.main.scale.x = this.main.scale.y = height / targetHeight;
+      } else {
+        this.main.scale.x = this.main.scale.y = width / targetWidth;
+      }
+
+      this.main.x = ( width ) /2 - (1/window.devicePixelRatio)*this.main.width/2;
+      this.main.y = (height ) /2 - (1/window.devicePixelRatio)*this.main.height/2;
+      // this.main.pivot.y = -(width * (1 / this.main.scale.y) / 2) * window.devicePixelRatio;
+      // this.main.pivot.x = -(width * (1 / this.main.scale.x) / 2) * window.devicePixelRatio;
+
+      window.scrollTo(0, 0);
+    };
+
+    window.addEventListener('resize', rendererResize);
+    window.addEventListener('deviceOrientation', rendererResize);
+
+    this.app = new PIXI.Application({backgroundColor: 0x1099bb, antialias: true});
 
     document.body.appendChild(this.app.view);
 
-    //this.app.view.requestFullscreen();
-
-    // this will always be 800x800
     this.main = new PIXI.Container();
-
-    this.main.scale.set(Math.min(window.innerWidth, window.innerHeight)/800);
-    console.log(this.main.scale);
 
     this.app.stage.addChild(this.main);
 
+    setTimeout(rendererResize, 200);
 
     this.main.addChild(new Board2());
 
@@ -279,6 +310,8 @@ class Game {
 }
 PIXI.loaders.Resource.setExtensionLoadType("wav", PIXI.loaders.Resource.LOAD_TYPE.XHR);
 
-var game = new Game();
-
-game.update();
+var game;
+document.fonts.ready.then( () => setTimeout( () => {
+  game = new Game();
+  game.update();
+}, 200));
