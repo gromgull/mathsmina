@@ -287,8 +287,8 @@ class Game {
         this.main.scale.x = this.main.scale.y = width / targetWidth;
       }
 
-      this.main.x = ( width ) /2 - (1/window.devicePixelRatio)*this.main.width/2;
-      this.main.y = (height ) /2 - (1/window.devicePixelRatio)*this.main.height/2;
+      this.main.x = ( width ) /2 - (1/window.devicePixelRatio)*targetWidth/2;
+      this.main.y = (height ) /2 - (1/window.devicePixelRatio)*targetHeight/2;
 
       window.scrollTo(0, 0);
     };
@@ -314,15 +314,45 @@ class Game {
     this.actors = [];
 
 
-    var fairy = require('pixi-svg-loader!../images/fairy.svg');
-    this.add(new SVGActor(fairy, {
+    var fairySVG = require('pixi-svg-loader!../images/fairy.svg');
+    this.fairy = new SVGActor(fairySVG, {
           lwing: {
             rotation: t => 0.3*Math.sin(t*0.01)
           },
           rwing: {
             rotation: t => 0.3*Math.cos(t*0.01)
           },
-    }));
+    });
+    console.log(this.fairy.position);
+    this.fairy.scale.x = -1;
+    this.fairy.position.x += 200;
+
+    this.add(this.fairy);
+
+    var unicornSVG = require('pixi-svg-loader!../images/unicorn.svg');
+    this.unicorn = new SVGActor(unicornSVG, {
+          tail: {
+            rotation: t => 0.3*Math.sin(t*0.001)
+          },
+          head: {
+            rotation: t => 0.2*Math.sin(t*0.0003)
+          }
+    });
+    this.unicorn.position.x += 500;
+    this.add(this.unicorn);
+
+    var evilSVG = require('pixi-svg-loader!../images/evil.svg');
+    this.evil = new SVGActor(evilSVG, {
+          head: {
+            rotation: t => 0.1*Math.sin(t*0.001)
+          },
+          lowerbody: {
+            rotation: t => 0.1*Math.sin(t*0.0012)
+          }
+    });
+    this.evil.position.y += 300;
+    this.add(this.evil);
+
 
   }
 
