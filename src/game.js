@@ -1,4 +1,12 @@
 
+var WebFont = require('webfontloader');
+
+WebFont.load({
+  google: {
+    families: ['Encode Sans Expanded:900']
+  }
+});
+
 PIXI[ "default" ] = PIXI;
 
 require('pixi-audio');
