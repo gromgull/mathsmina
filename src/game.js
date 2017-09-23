@@ -176,8 +176,96 @@ class Board extends PIXI.Container {
     }
 
     this.addChild(gfx);
+
+    var grass = new PIXI.Sprite.fromImage('images/grass.png');
+    grass.y = 920;
+    this.addChild(grass);
+
+
+    var evilSVG = require('pixi-svg-loader!../images/evil.svg');
+    this.evil = new SVGActor(evilSVG, {
+          head: {
+            rotation: t => 0.1*Math.sin(t*0.001)
+          },
+          lowerbody: {
+            rotation: t => 0.1*Math.sin(t*0.0012),
+            position: (t, _, p, o) => new PIXI.Point(p.x, o.y+10*Math.sin(t*0.003))
+          }
+    });
+    this.evil.scale.set(0.4);
+    this.evil.y = 800;
+    this.addChild(this.evil);
+    game.actors.push(this.evil);
+
+    var fairySVG = require('pixi-svg-loader!../images/fairy.svg');
+    this.fairy = new SVGActor(fairySVG, {
+          lwing: {
+            rotation: t => 0.3*Math.sin(t*0.01)
+          },
+          rwing: {
+            rotation: t => 0.3*Math.cos(t*0.01)
+          },
+    });
+    console.log(this.fairy.position);
+    this.fairy.svg.x -= this.fairy.width;
+    this.fairy.scale.x = -0.4;
+    this.fairy.scale.y = 0.4;
+    this.fairy.position.y = 800;
+
+    this.addChild(this.fairy);
+    game.actors.push(this.fairy);
+
+    var unicornSVG = require('pixi-svg-loader!../images/unicorn.svg');
+    this.unicorn = new SVGActor(unicornSVG, {
+          tail: {
+            rotation: t => 0.3*Math.sin(t*0.001)
+          },
+          head: {
+            rotation: t => 0.2*Math.sin(t*0.0003)
+          }
+    });
+    this.unicorn.scale.x = 0.4;
+    this.unicorn.scale.y = 0.4;
+    this.unicorn.y = 800;
+    this.unicorn.x = 768-this.unicorn.width;
+    this.addChild(this.unicorn);
+    game.actors.push(this.unicorn);
+
+    this.reset();
+
   }
 
+  reset() {
+    this.fairy.position.x = 0;
+    this.evil.x = -50;
+
+  }
+
+  correct() {
+    if (game.sounds.success)
+      game.sounds.success.play();
+    this.fairy.x += 30;
+
+    if (this.fairy.x > 550) this.win();
+  }
+  wrong() {
+    if (game.sounds.fail)
+      game.sounds.fail.play();
+    this.evil.x += 30;
+    if (this.evil.x > 550) this.fail();
+  }
+
+  win() {
+    if (game.sounds.start)
+      game.sounds.start.play();
+    this.reset();
+  }
+
+  fail() {
+    if (game.sounds.alert)
+      game.sounds.alert.play();
+    this.reset();
+  }
 
   onTextOut(t) {
   }
@@ -201,8 +289,7 @@ class Board1 extends Board {
   onTextUp(t) {
   }
   onTextDown(t) {
-    game.stars(t.x, t.y);
-    if (game.sounds.success) game.sounds.success.play();
+    this.success();
   }
 }
 
@@ -210,15 +297,6 @@ class Board1 extends Board {
 class Board2 extends Board {
   constructor() {
     super();
-    this.numbers.forEach( n => n.style.fill = null );
-
-    this.targets = Array.from(Array(100).keys());
-    shuffle(this.targets);
-
-    for (var i=0 ; i<10 ; i++) {
-      var x = this.targets.pop();
-      this.numbers[x].style.fill = 'white';
-    }
 
     var style = {
       fontFamily: 'Encode Sans Expanded',
@@ -235,6 +313,20 @@ class Board2 extends Board {
     this.addChild(this.text);
 
     this.next();
+
+  }
+
+  reset() {
+    super.reset();
+    this.numbers.forEach( n => n.style.fill = null );
+
+    this.targets = Array.from(Array(100).keys());
+    shuffle(this.targets);
+
+    for (var i=0 ; i<10 ; i++) {
+      var x = this.targets.pop();
+      this.numbers[x].style.fill = 'white';
+    }
 
   }
 
@@ -255,13 +347,11 @@ class Board2 extends Board {
     if (this.target == t.num) {
       t.style.fill='white';
       game.stars(t.x, t.y);
-      if (game.sounds.success)
-        game.sounds.success.play();
+      this.correct();
       this.target = this.targets.pop();
       this.next();
     } else {
-      if (game.sounds.fail)
-        game.sounds.fail.play();
+      this.wrong();
     }
 
   }
@@ -333,59 +423,11 @@ class Game {
 
     setTimeout(rendererResize, 200);
 
-    this.main.addChild(new Board2());
-
-
     this.last_time = 0;
 
     this.actors = [];
 
 
-    var fairySVG = require('pixi-svg-loader!../images/fairy.svg');
-    this.fairy = new SVGActor(fairySVG, {
-          lwing: {
-            rotation: t => 0.3*Math.sin(t*0.01)
-          },
-          rwing: {
-            rotation: t => 0.3*Math.cos(t*0.01)
-          },
-    });
-    console.log(this.fairy.position);
-    this.fairy.scale.x = -1;
-    this.fairy.position.x += 200;
-
-    this.add(this.fairy);
-
-    var unicornSVG = require('pixi-svg-loader!../images/unicorn.svg');
-    this.unicorn = new SVGActor(unicornSVG, {
-          tail: {
-            rotation: t => 0.3*Math.sin(t*0.001)
-          },
-          head: {
-            rotation: t => 0.2*Math.sin(t*0.0003)
-          }
-    });
-    this.unicorn.position.x += 500;
-    this.add(this.unicorn);
-
-    var evilSVG = require('pixi-svg-loader!../images/evil.svg');
-    this.evil = new SVGActor(evilSVG, {
-          head: {
-            rotation: t => 0.1*Math.sin(t*0.001)
-          },
-          lowerbody: {
-            rotation: t => 0.1*Math.sin(t*0.0012)
-          }
-    });
-    this.evil.position.y += 300;
-    this.add(this.evil);
-
-
-  }
-
-  add(actor) {
-    this.main.addChild(actor);
-    this.actors.push(actor);
   }
 
   stars(x,y) {
