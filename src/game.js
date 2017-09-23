@@ -16,10 +16,10 @@ require('pixi-particles');
 
 
 function shuffle(a) {
-    for (let i = a.length; i; i--) {
-        let j = Math.floor(Math.random() * i);
-        [a[i - 1], a[j]] = [a[j], a[i - 1]];
-    }
+  for (let i = a.length; i; i--) {
+    let j = Math.floor(Math.random() * i);
+    [a[i - 1], a[j]] = [a[j], a[i - 1]];
+  }
 }
 
 class Actor extends PIXI.Container {
@@ -248,13 +248,13 @@ class Board extends PIXI.Container {
 
     var evilSVG = require('pixi-svg-loader!../images/evil.svg');
     this.evil = new SVGActor(evilSVG, {
-          head: {
-            rotation: t => 0.1*Math.sin(t*0.001)
-          },
-          lowerbody: {
-            rotation: t => 0.1*Math.sin(t*0.0012),
-            position: (t, _, p, o) => new PIXI.Point(p.x, o.y+10*Math.sin(t*0.003))
-          }
+      head: {
+        rotation: t => 0.1*Math.sin(t*0.001)
+      },
+      lowerbody: {
+        rotation: t => 0.1*Math.sin(t*0.0012),
+        position: (t, _, p, o) => new PIXI.Point(p.x, o.y+10*Math.sin(t*0.003))
+      }
     });
     this.evil.scale.set(0.4);
     this.evil.y = 800;
@@ -263,12 +263,12 @@ class Board extends PIXI.Container {
 
     var fairySVG = require('pixi-svg-loader!../images/fairy.svg');
     this.fairy = new SVGActor(fairySVG, {
-          lwing: {
-            rotation: t => 0.3*Math.sin(t*0.01)
-          },
-          rwing: {
-            rotation: t => 0.3*Math.cos(t*0.01)
-          },
+      lwing: {
+        rotation: t => 0.3*Math.sin(t*0.01)
+      },
+      rwing: {
+        rotation: t => 0.3*Math.cos(t*0.01)
+      },
     });
     console.log(this.fairy.position);
     this.fairy.svg.x -= this.fairy.width;
@@ -281,12 +281,12 @@ class Board extends PIXI.Container {
 
     var unicornSVG = require('pixi-svg-loader!../images/unicorn.svg');
     this.unicorn = new SVGActor(unicornSVG, {
-          tail: {
-            rotation: t => 0.3*Math.sin(t*0.001)
-          },
-          head: {
-            rotation: t => 0.2*Math.sin(t*0.0003)
-          }
+      tail: {
+        rotation: t => 0.3*Math.sin(t*0.001)
+      },
+      head: {
+        rotation: t => 0.2*Math.sin(t*0.0003)
+      }
     });
     this.unicorn.scale.x = 0.4;
     this.unicorn.scale.y = 0.4;
@@ -394,6 +394,7 @@ class Board2 extends Board {
       var x = this.targets.pop();
       this.numbers[x].style.fill = 'white';
     }
+    if (this.text) this.next(); // initially not created yet!
 
   }
 
