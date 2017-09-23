@@ -1,4 +1,10 @@
 
+PIXI[ "default" ] = PIXI;
+
+require('pixi-audio');
+require('pixi-particles');
+
+
 function shuffle(a) {
     for (let i = a.length; i; i--) {
         let j = Math.floor(Math.random() * i);

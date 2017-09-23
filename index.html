@@ -2,14 +2,16 @@
     <head>
         <title>Math Mina</title>
         <link href="https://fonts.googleapis.com/css?family=Encode+Sans+Expanded:900" rel="stylesheet">
+        <style>
+            .invisible { display: none }
+        </style>
     </head>
     <body>
+        <div class="invisible">
+            <svg id="svg" viewBox="0 0 100 100" >
+                <use xlink:href="images/ball.svg#ball"></use>
+            </svg>
+        </div>
     </body>
-    <script src="https://pixijs.download/v4.5.6/pixi.js"></script>
-    <script>
-     PIXI[ "default" ] = PIXI;
-    </script>
-    <script src="vendor/pixi-particles.js"></script>
-    <script src="vendor/pixi-audio.js"></script>
-    <script src="game.js"></script>
+    <script src="bundle.js"></script>
 </Html>
