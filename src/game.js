@@ -7,7 +7,9 @@ WebFont.load({
   }
 });
 
+// fixes for pixi-audio
 PIXI[ "default" ] = PIXI;
+PIXI.loaders.Resource.setExtensionLoadType("wav", PIXI.loaders.Resource.LOAD_TYPE.XHR);
 
 require('pixi-audio');
 require('pixi-particles');
@@ -289,14 +291,19 @@ class Game {
 
       this.app.renderer.resize(canvas.width, canvas.height);
 
-      if (height / targetHeight > width / targetWidth) {
-        this.main.scale.x = this.main.scale.y = height / targetHeight;
+      if (height / targetHeight < width / targetWidth) {
+        this.main.scale.x = this.main.scale.y = window.devicePixelRatio * height / targetHeight;
+
       } else {
-        this.main.scale.x = this.main.scale.y = width / targetWidth;
+        this.main.scale.x = this.main.scale.y = window.devicePixelRatio * width / targetWidth;
       }
 
-      this.main.x = ( width ) /2 - (1/window.devicePixelRatio)*targetWidth/2;
-      this.main.y = (height ) /2 - (1/window.devicePixelRatio)*targetHeight/2;
+      this.main.y = canvas.height /2 - (this.main.scale.x)*targetHeight/2;
+      this.main.x = canvas.width /2 - (this.main.scale.x)*targetWidth/2;
+
+      console.log('canvas wh sw sh', canvas.width, canvas.height, canvas.style.width, canvas.style.height);
+      console.log('stage xys', this.main.x, this.main.y, this.main.scale.x);
+      console.log('renderer wh', this.app.renderer.width, this.app.renderer.height);
 
       window.scrollTo(0, 0);
     };
@@ -391,10 +398,9 @@ class Game {
   }
 
 }
-PIXI.loaders.Resource.setExtensionLoadType("wav", PIXI.loaders.Resource.LOAD_TYPE.XHR);
 
-var game;
-document.fonts.ready.then( () => setTimeout( () => {
-  game = new Game();
-  game.update();
-}, 200));
+
+var game = new Game();
+game.update();
+
+game.main.addChild(new Board2());
