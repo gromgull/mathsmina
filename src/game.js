@@ -58,6 +58,70 @@ class SVGActor extends Actor {
   }
 }
 
+class Rain extends Actor {
+  constructor(x,y) {
+    super();
+    this.emitter = new PIXI.particles.Emitter(
+      this,
+      [ PIXI.Texture.fromImage('images/droplet.png') ],
+      {
+	    "alpha": {
+		  "start": 1,
+		  "end": 0
+	    },
+	    "scale": {
+		  "start": 1,
+		  "end": 1,
+		  "minimumScaleMultiplier": 1
+	    },
+	    "color": {
+		  "start": "#006685",
+		  "end": "#bddfff"
+	    },
+	    "speed": {
+		  "start": 0,
+		  "end": 50,
+		  "minimumSpeedMultiplier": 1
+	    },
+	    "acceleration": {
+		  "x": 0,
+		  "y": 250
+	    },
+	    "maxSpeed": 0,
+	    "startRotation": {
+		  "min": 0,
+		  "max": 0
+	    },
+	    "noRotation": false,
+	    "rotationSpeed": {
+		  "min": 0,
+		  "max": 1
+	    },
+	    "lifetime": {
+		  "min": 0.2,
+		  "max": 4
+	    },
+	    "blendMode": "normal",
+	    "frequency": 0.01,
+	    "emitterLifetime": 5,
+	    "maxParticles": 200,
+	    "pos": {
+		  "x": 0,
+		  "y": 0
+	    },
+	    "addAtBack": false,
+	    "spawnType": "rect",
+	    "spawnRect": {
+		  "x": 1,
+		  "y": 0,
+		  "w": 768,
+		  "h": 0
+	    }
+      });
+    this.emitter.playOnceAndDestroy();
+  }
+
+}
 
 class Hearts extends Actor {
   constructor(x,y) {
@@ -324,6 +388,9 @@ class Board extends PIXI.Container {
   win() {
     if (game.sounds.win)
       game.sounds.win.play();
+    if (game.sounds.horse)
+      game.sounds.horse.play();
+
     game.hearts(768/2, 800/3);
     setTimeout(() => this.reset(), 5000);
   }
@@ -331,7 +398,11 @@ class Board extends PIXI.Container {
   fail() {
     if (game.sounds.alert)
       game.sounds.alert.play();
-    this.reset();
+    if (game.sounds.haha)
+      game.sounds.haha.play();
+
+    game.rain();
+    setTimeout(() => this.reset(), 7000);
   }
 
   onTextOut(t) {
@@ -437,6 +508,9 @@ class Game {
       {name:"success", url:"./sounds/342751__rhodesmas__coins-purchase-3.wav" },
       {name:"alert", url:"./sounds/380265__rhodesmas__alert-02.wav" },
       {name:"fail", url:"./sounds/342756__rhodesmas__failure-01.wav" },
+      {name:"haha", url:"./sounds/219110__zyrytsounds__evil-laugh.wav" },
+      {name:"horse", url:"./sounds/59569__3bagbrew__horse.wav" },
+
     ];
     PIXI.loader.add(sounds).load(() => {
 
@@ -506,6 +580,9 @@ class Game {
     this.main.addChild(new Stars(x, y));
   }
 
+  rain() {
+    this.main.addChild(new Rain());
+  }
   hearts(x,y) {
     this.main.addChild(new Hearts(x, y));
   }
