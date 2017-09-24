@@ -185,7 +185,7 @@ class Stars extends ParticleEffect {
 }
 
 module.exports = {
-  Rain: Rain,
-  Hearts: Hearts,
-  Stars: Stars
+  Rain,
+  Hearts,
+  Stars
 };

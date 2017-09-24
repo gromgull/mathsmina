@@ -4,6 +4,8 @@ require('pixi-sound');
 var WebFont = require('webfontloader');
 
 var particles = require('./particles.js');
+var utils = require('./utils.js');
+var actor = require('./actor.js');
 
 WebFont.load({
   google: {
@@ -11,51 +13,6 @@ WebFont.load({
   }
 });
 
-
-
-
-function shuffle(a) {
-  for (let i = a.length; i; i--) {
-    let j = Math.floor(Math.random() * i);
-    [a[i - 1], a[j]] = [a[j], a[i - 1]];
-  }
-}
-
-class Actor extends PIXI.Container {
-
-  update (t, delta) {
-  }
-}
-
-class SVGActor extends Actor {
-  constructor(Svg, anim) {
-    super();
-    this.svg = new Svg();
-    this.addChild(this.svg);
-    this.anim = anim;
-
-    this.defaults = {};
-    for(var prop in this.svg) {
-      if (!this.svg.hasOwnProperty(prop)) continue;
-      var val = this.svg[prop];
-      if (val instanceof PIXI.Sprite || val instanceof PIXI.Container) {
-        this.defaults[prop] = { rotation: val.rotation,
-                                position: new PIXI.Point(val.position.x, val.position.y) }; // transform etc.
-      }
-    }
-
-  }
-
-  update(t, delta) {
-    Object.keys(this.anim).forEach(k => {
-      if (!this.svg[k]) return;
-      // todo - deeper hierarchy!
-      Object.keys(this.anim[k]).forEach(prop => {
-        this.svg[k][prop] = this.anim[k][prop](t, delta, this.svg[k][prop], this.defaults[k][prop]);
-      });
-    });
-  }
-}
 
 class Board extends PIXI.Container {
 
@@ -121,7 +78,7 @@ class Board extends PIXI.Container {
 
 
     var evilSVG = require('pixi-svg-loader!../images/evil.svg');
-    this.evil = new SVGActor(evilSVG, {
+    this.evil = new actor.SVGActor(evilSVG, {
       head: {
         rotation: t => 0.1*Math.sin(t*0.001)
       },
@@ -136,7 +93,7 @@ class Board extends PIXI.Container {
     game.actors.push(this.evil);
 
     var fairySVG = require('pixi-svg-loader!../images/fairy.svg');
-    this.fairy = new SVGActor(fairySVG, {
+    this.fairy = new actor.SVGActor(fairySVG, {
       lwing: {
         rotation: t => 0.3*Math.sin(t*0.01)
       },
@@ -154,7 +111,7 @@ class Board extends PIXI.Container {
     game.actors.push(this.fairy);
 
     var unicornSVG = require('pixi-svg-loader!../images/unicorn.svg');
-    this.unicorn = new SVGActor(unicornSVG, {
+    this.unicorn = new actor.SVGActor(unicornSVG, {
       tail: {
         rotation: t => 0.3*Math.sin(t*0.001)
       },
@@ -269,7 +226,7 @@ class Board2 extends Board {
     this.numbers.forEach( n => n.style.fill = null );
 
     this.targets = Array.from(Array(100).keys());
-    shuffle(this.targets);
+    utils.shuffle(this.targets);
 
     for (var i=0 ; i<10 ; i++) {
       var x = this.targets.pop();
