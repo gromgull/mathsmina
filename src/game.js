@@ -1,4 +1,6 @@
 
+require('pixi-sound');
+
 var WebFont = require('webfontloader');
 
 var particles = require('./particles.js');
@@ -9,11 +11,7 @@ WebFont.load({
   }
 });
 
-// fixes for pixi-audio
-PIXI[ "default" ] = PIXI;
-PIXI.loaders.Resource.setExtensionLoadType("wav", PIXI.loaders.Resource.LOAD_TYPE.XHR);
 
-require('pixi-audio');
 
 
 function shuffle(a) {
@@ -324,11 +322,11 @@ class Game {
       {name:"horse", url:"./sounds/59569__3bagbrew__horse.wav" },
 
     ];
-    PIXI.loader.add(sounds).load(() => {
+    PIXI.loader.add(sounds).load((_, resources) => {
 
-      sounds.forEach( s => this.sounds[s.name] = PIXI.audioManager.getAudio(s.name) );
+      sounds.forEach( s => this.sounds[s.name] = resources[s.name].sound );
 
-      this.sounds.success.volume = 0.5;
+      //this.sounds.success.volume = 0.5;
     });
   }
 
