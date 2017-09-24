@@ -22,6 +22,8 @@ class Board extends PIXI.Container {
     var i;
     this.numbers = [];
 
+    this.state = 'loading';
+
     var style = {
       fontFamily: 'Encode Sans Expanded',
       fontSize: 32,
@@ -29,10 +31,10 @@ class Board extends PIXI.Container {
       fill: 'white',
     };
 
-    var onTextDown = function () { board.onTextDown(this); };
-    var onTextUp = function () { board.onTextUp(this); };
-    var onTextOver = function () { board.onTextOver(this); };
-    var onTextOut = function () { board.onTextOut(this); };
+    var onTextDown = function () { board.state == 'playing' && board.onTextDown(this); };
+    var onTextUp = function () { board.state == 'playing' && board.onTextUp(this); };
+    var onTextOver = function () { board.state == 'playing' && board.onTextOver(this); };
+    var onTextOut = function () { board.state == 'playing' && board.onTextOut(this); };
 
     // width is 768
     // x margin is 34/34, grid is 700
@@ -79,80 +81,109 @@ class Board extends PIXI.Container {
 
     var evilSVG = require('pixi-svg-loader!../images/evil.svg');
     this.evil = new actor.SVGActor(evilSVG, {
-      head: {
-        rotation: t => 0.1*Math.sin(t*0.001)
+      idle: {
+        head: {
+          rotation: t => 0.1*Math.sin(t*0.001)
+        },
+        lowerbody: {
+          rotation: t => 0.1*Math.sin(t*0.0012),
+          position: (t, _, p, o) => new PIXI.Point(p.x, o.y+10*Math.sin(t*0.003))
+        }
       },
-      lowerbody: {
-        rotation: t => 0.1*Math.sin(t*0.0012),
-        position: (t, _, p, o) => new PIXI.Point(p.x, o.y+10*Math.sin(t*0.003))
+      jump: {
+        _duration: 500,
+        _next: 'idle',
+        rotation: t => 0.001*t*2*Math.PI/0.5,
+        position: (t, e, p, o) => new PIXI.Point(p.x+e*60/0.5, o.y-100*Math.sin(Math.PI*t/500))
       }
+    }, {
+      scale: new PIXI.Point(0.4, 0.4),
+      y: 880,
+      x: 50,
     });
-    this.evil.scale.set(0.4);
-    this.evil.y = 800;
     this.addChild(this.evil);
     game.actors.push(this.evil);
 
     var fairySVG = require('pixi-svg-loader!../images/fairy.svg');
     this.fairy = new actor.SVGActor(fairySVG, {
-      lwing: {
-        rotation: t => 0.3*Math.sin(t*0.01)
+      idle: {
+        lwing: {
+          rotation: t => 0.3*Math.sin(t*0.01)
+        },
+        rwing: {
+          rotation: t => 0.3*Math.cos(t*0.01)
+        },
       },
-      rwing: {
-        rotation: t => 0.3*Math.cos(t*0.01)
+      jump: {
+        _duration: 500,
+        _next: 'idle',
+        rotation: t => 0.001*t*2*Math.PI/0.5,
+        position: (t, e, p, o) => new PIXI.Point(p.x+e*60/0.5, o.y-100*Math.sin(Math.PI*t/500))
       },
+
+    }, {
+      scale: new PIXI.Point(-0.4, 0.4),
+      y: 880,
+      x: 80,
     });
-    console.log(this.fairy.position);
-    this.fairy.svg.x -= this.fairy.width;
-    this.fairy.scale.x = -0.4;
-    this.fairy.scale.y = 0.4;
-    this.fairy.position.y = 800;
 
     this.addChild(this.fairy);
     game.actors.push(this.fairy);
 
     var unicornSVG = require('pixi-svg-loader!../images/unicorn.svg');
     this.unicorn = new actor.SVGActor(unicornSVG, {
-      tail: {
-        rotation: t => 0.3*Math.sin(t*0.001)
-      },
-      head: {
-        rotation: t => 0.2*Math.sin(t*0.0003)
+      idle: {
+        tail: {
+          rotation: t => 0.3*Math.sin(t*0.001)
+        },
+        head: {
+          rotation: t => 0.2*Math.sin(t*0.0003)
+        }
       }
     });
     this.unicorn.scale.x = 0.4;
     this.unicorn.scale.y = 0.4;
-    this.unicorn.y = 800;
-    this.unicorn.x = 768-this.unicorn.width;
+    this.unicorn.y = 880;
+    this.unicorn.x = 768-this.unicorn.width/2;
     this.addChild(this.unicorn);
     game.actors.push(this.unicorn);
 
     this.reset();
-
   }
 
   reset() {
-    this.fairy.position.x = 0;
-    this.evil.x = -50;
+    this.fairy.position.x = 80;
+    this.evil.x = 50;
     if (game.sounds.start)
       game.sounds.start.play();
+    this.state = 'playing';
+  }
 
+  update() {
+    if (this.state != 'playing') return;
+    if (this.evil.x > this.unicorn.x-this.unicorn.width/2) this.fail();
+    if (this.fairy.x > this.unicorn.x-this.unicorn.width/2) this.win();
   }
 
   correct() {
     if (game.sounds.success)
       game.sounds.success.play();
-    this.fairy.x += 30;
-
-    if (this.fairy.x > 550) this.win();
+    this.fairy.setState('jump');
+    this.state = 'anim';
+    setTimeout(() => this.state = 'playing', 500);
   }
   wrong() {
     if (game.sounds.fail)
       game.sounds.fail.play();
-    this.evil.x += 30;
-    if (this.evil.x > 550) this.fail();
+    this.evil.setState('jump');
+    this.state = 'anim';
+    setTimeout(() => this.state = 'playing', 500);
   }
 
+
+
   win() {
+    this.state = 'finished';
     if (game.sounds.win)
       game.sounds.win.play();
     if (game.sounds.horse)
@@ -163,6 +194,7 @@ class Board extends PIXI.Container {
   }
 
   fail() {
+    this.state = 'finished';
     if (game.sounds.alert)
       game.sounds.alert.play();
     if (game.sounds.haha)
@@ -268,6 +300,9 @@ class Game {
 
 
   load() {
+
+    // TODO: no real need to reassign these? Just use loader?
+
     this.sounds = {};
     var sounds = [
       {name:"start", url:"./sounds/322929__rhodesmas__success-04.wav" },
@@ -376,4 +411,7 @@ class Game {
 var game = new Game();
 game.update();
 
-game.main.addChild(new Board2());
+var b = new Board2();
+
+game.main.addChild(b);
+game.actors.push(b);
