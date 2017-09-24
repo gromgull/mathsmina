@@ -93,8 +93,8 @@ class Board extends PIXI.Container {
       jump: {
         _duration: 500,
         _next: 'idle',
-        rotation: t => 0.001*t*2*Math.PI/0.5,
-        position: (t, e, p, o) => new PIXI.Point(p.x+e*60/0.5, o.y-100*Math.sin(Math.PI*t/500))
+        rotation: t => 0.2*Math.sin(0.001*t*5*Math.PI/0.5),
+        position: (t, e, p, o) => new PIXI.Point(p.x+e*60/0.5, o.y-10*Math.sin(10*Math.PI*t/500))
       }
     }, {
       scale: new PIXI.Point(0.4, 0.4),
