@@ -83,18 +83,19 @@ class Board extends PIXI.Container {
     this.evil = new actor.SVGActor(evilSVG, {
       idle: {
         head: {
-          rotation: t => 0.1*Math.sin(t*0.001)
+          rotation: ({t}) => 0.1*Math.sin(t*0.001)
         },
         lowerbody: {
-          rotation: t => 0.1*Math.sin(t*0.0012),
-          position: (t, _, p, o) => new PIXI.Point(p.x, o.y+10*Math.sin(t*0.003))
+          rotation: ({t}) => 0.1*Math.sin(t*0.0012),
+          y: ({t, original}) => original+10*Math.sin(t*0.003)
         }
       },
       jump: {
         _duration: 500,
         _next: 'idle',
-        rotation: t => 0.2*Math.sin(0.001*t*5*Math.PI/0.5),
-        position: (t, e, p, o) => new PIXI.Point(p.x+e*60/0.5, o.y-10*Math.sin(10*Math.PI*t/500))
+        rotation: ({state_t}) => 0.2*Math.sin(0.001*state_t*5*Math.PI/0.5),
+        position: ({state_t, delta, current, original}) => new PIXI.Point(current.x+delta*60/0.5,
+                                                                          original.y-10*Math.sin(10*Math.PI*state_t/500))
       }
     }, {
       scale: new PIXI.Point(0.4, 0.4),
@@ -108,17 +109,18 @@ class Board extends PIXI.Container {
     this.fairy = new actor.SVGActor(fairySVG, {
       idle: {
         lwing: {
-          rotation: t => 0.3*Math.sin(t*0.01)
+          rotation: ({t}) => 0.3*Math.sin(t*0.01)
         },
         rwing: {
-          rotation: t => 0.3*Math.cos(t*0.01)
+          rotation: ({t}) => 0.3*Math.cos(t*0.01)
         },
       },
       jump: {
         _duration: 500,
         _next: 'idle',
-        rotation: t => 0.001*t*2*Math.PI/0.5,
-        position: (t, e, p, o) => new PIXI.Point(p.x+e*60/0.5, o.y-100*Math.sin(Math.PI*t/500))
+        rotation: ({t}) => 0.001*t*2*Math.PI/0.5,
+        position: ({state_t, delta, current, original}) => new PIXI.Point(current.x+delta*60/0.5,
+                                                                          original.y-100*Math.sin(Math.PI*state_t/500))
       },
 
     }, {
@@ -134,10 +136,10 @@ class Board extends PIXI.Container {
     this.unicorn = new actor.SVGActor(unicornSVG, {
       idle: {
         tail: {
-          rotation: t => 0.3*Math.sin(t*0.001)
+          rotation: ({t}) => 0.3*Math.sin(t*0.001)
         },
         head: {
-          rotation: t => 0.2*Math.sin(t*0.0003)
+          rotation: ({t}) => 0.2*Math.sin(t*0.0003)
         }
       }
     });
