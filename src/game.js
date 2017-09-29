@@ -14,10 +14,12 @@ WebFont.load({
 });
 
 
-class Board extends PIXI.Container {
+class Board extends actor.Actor {
 
   constructor() {
     super();
+
+    this.actors = [];
     var board = this;
     var i;
     this.numbers = [];
@@ -103,7 +105,7 @@ class Board extends PIXI.Container {
       x: 50,
     });
     this.addChild(this.evil);
-    game.actors.push(this.evil);
+    this.actors.push(this.evil);
 
     var fairySVG = require('pixi-svg-loader!../images/fairy.svg');
     this.fairy = new actor.SVGActor(fairySVG, {
@@ -118,7 +120,7 @@ class Board extends PIXI.Container {
       jump: {
         _duration: 500,
         _next: 'idle',
-        rotation: ({t}) => 0.001*t*2*Math.PI/0.5,
+        rotation: ({state_t}) => 0.001*state_t*2*Math.PI/0.5,
         position: ({state_t, delta, current, original}) => new PIXI.Point(current.x+delta*60/0.5,
                                                                           original.y-100*Math.sin(Math.PI*state_t/500))
       },
@@ -130,7 +132,7 @@ class Board extends PIXI.Container {
     });
 
     this.addChild(this.fairy);
-    game.actors.push(this.fairy);
+    this.actors.push(this.fairy);
 
     var unicornSVG = require('pixi-svg-loader!../images/unicorn.svg');
     this.unicorn = new actor.SVGActor(unicornSVG, {
@@ -148,7 +150,7 @@ class Board extends PIXI.Container {
     this.unicorn.y = 880;
     this.unicorn.x = 768-this.unicorn.width/2;
     this.addChild(this.unicorn);
-    game.actors.push(this.unicorn);
+    this.actors.push(this.unicorn);
 
     this.reset();
   }
@@ -288,7 +290,6 @@ class Board2 extends Board {
       t.style.fill='white';
       game.stars(t.x, t.y);
       this.correct();
-      this.target = this.targets.pop();
       this.next();
     } else {
       this.wrong();
@@ -297,6 +298,113 @@ class Board2 extends Board {
   }
 }
 
+
+class Board3 extends Board2 {
+  constructor() {
+    super();
+
+    this.Y = utils.choice([-10,-9,-8,-3,-2,-1,
+                            10, 9, 8, 3, 2, 1]);
+
+    console.log(this.Y);
+    this.next();
+  }
+
+  next() {
+    if (!this.Y) return;
+
+    let Xs = this.numbers.filter(n => n.style.fill == 'white').map(n => n.num);
+    utils.shuffle(Xs);
+    let x = null;
+    while ( true ) {
+      x = Xs.pop();
+      this.target = x + this.Y;
+      let i = this.targets.indexOf( this.target );
+      if ( i != -1 ) {
+        this.targets.splice(i, 1);
+        break;
+      }
+    }
+    console.log('x', x, 'Y', this.Y);
+    this.text.text = 'Wo ist '+(1+x)+' '+(this.Y>0?('+ '+this.Y):('- '+(-this.Y)))+'?';
+  }
+
+}
+
+
+
+
+class Menu extends actor.Actor {
+
+
+  constructor() {
+    super();
+
+    this.logo = new PIXI.Sprite.fromImage('images/logo.png');
+    this.logo.x = 384;
+    this.logo.y = 180;
+    this.logo.anchor.set(0.5, 0.5);
+
+    this.addChild(this.logo);
+
+    var grass = new PIXI.Sprite.fromImage('images/grass.png');
+    grass.y = 920;
+    this.addChild(grass);
+
+
+    var btn1 = new PIXI.Sprite.fromImage('images/mode1.png');
+    btn1.x = 384-16-128;
+    btn1.y = 450;
+    btn1.anchor.set(0.5, 0.5);
+
+    btn1.interactive = true;
+    btn1.on('pointerdown', () => game.play(new Board2()) );
+
+    this.addChild(btn1);
+
+    var btn2 = new PIXI.Sprite.fromImage('images/mode2.png');
+    btn2.x = 384+16+128;
+    btn2.y = 450;
+    btn2.anchor.set(0.5, 0.5);
+
+    btn2.interactive = true;
+    btn2.on('pointerdown', () => game.play(new Board3()) );
+
+    this.addChild(btn2);
+
+    var btn3 = new PIXI.Sprite.fromImage('images/mode_glade.png');
+    btn3.x = 384;
+    btn3.y = 650;
+    btn3.anchor.set(0.5, 0.5);
+
+    btn3.interactive = true;
+    btn3.on('pointerdown', () => game.play(new Glade()) );
+
+    this.addChild(btn3);
+
+  }
+
+  update(t) {
+    this.logo.y = 180 + Math.sin(t*0.001)*10;
+    this.logo.rotation = Math.sin(t*0.0005)/20;
+  }
+}
+
+class Glade extends actor.Actor {
+
+  constructor() {
+    super();
+
+    var glade = new PIXI.Sprite.fromImage('images/glade.png');
+    this.addChild(glade);
+
+    var back = new PIXI.Sprite.fromImage('images/back.png');
+    back.interactive = true;
+    back.on('pointerdown', () => game.play(new Menu()));
+    this.addChild(back);
+
+  }
+}
 
 class Game {
 
@@ -407,13 +515,22 @@ class Game {
 	// this.app.renderer.render(this.main);
   }
 
+  play(thing) {
+    this.actors = [];
+    if (thing.actors)
+      this.actors = this.actors.concat(thing.actors);
+    this.main.removeChildren();
+    this.main.addChild(thing);
+    this.actors.push(thing);
+
+  }
+
 }
 
 
 var game = new Game();
 game.update();
 
-var b = new Board2();
 
-game.main.addChild(b);
-game.actors.push(b);
+//game.play(new Board3());
+game.play(new Menu());
