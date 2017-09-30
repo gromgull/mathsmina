@@ -415,13 +415,13 @@ class Game {
 
     this.sounds = {};
     var sounds = [
-      {name:"start", url:"./sounds/322929__rhodesmas__success-04.wav" },
-      {name:"win", url:"./sounds/320653__rhodesmas__success-01.wav" },
-      {name:"success", url:"./sounds/342751__rhodesmas__coins-purchase-3.wav" },
-      {name:"alert", url:"./sounds/380265__rhodesmas__alert-02.wav" },
-      {name:"fail", url:"./sounds/342756__rhodesmas__failure-01.wav" },
-      {name:"haha", url:"./sounds/219110__zyrytsounds__evil-laugh.wav" },
-      {name:"horse", url:"./sounds/59569__3bagbrew__horse.wav" },
+      {name:"start", url:"./sounds/322929__rhodesmas__success-04.m4a" },
+      {name:"win", url:"./sounds/320653__rhodesmas__success-01.m4a" },
+      {name:"success", url:"./sounds/342751__rhodesmas__coins-purchase-3.m4a" },
+      {name:"alert", url:"./sounds/380265__rhodesmas__alert-02.m4a" },
+      {name:"fail", url:"./sounds/342756__rhodesmas__failure-01.m4a" },
+      {name:"haha", url:"./sounds/219110__zyrytsounds__evil-laugh.m4a" },
+      {name:"horse", url:"./sounds/59569__3bagbrew__horse.m4a" },
 
     ];
     PIXI.loader.add(sounds).load((_, resources) => {
