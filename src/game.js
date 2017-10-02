@@ -330,6 +330,9 @@ class Board3 extends Board2 {
     }
     console.log('x', x, 'Y', this.Y);
     this.text.text = 'Wo ist '+(1+x)+' '+(this.Y>0?('+ '+this.Y):('- '+(-this.Y)))+'?';
+
+    game.speak(''+(1+x)+ (this.Y>0 ? ' pluss ' : ' minus ') + '' + Math.abs(this.Y) );
+
   }
 
 }
@@ -498,7 +501,21 @@ class Loader extends actor.Actor {
 
 class Game {
 
+  speak(text) {
+    if (!this.voice) return;
+    var utt = new SpeechSynthesisUtterance(text);
+    utt.voiceURI = this.voice.voiceURI;
+    utt.lang = this.voice.lang;
+    speechSynthesis.speak(utt);
+  }
+
   constructor() {
+    if (window.speechSynthesis)
+      speechSynthesis.onvoiceschanged = () => {
+        game.voice = speechSynthesis.getVoices().filter(v => v.lang == 'de-DE' || v.lang == 'de_DE')[0];
+        //alert('voice ' + game.voice.name + '/' + game.voice.lang );
+      };
+
 
     var targetWidth = 768;
     var targetHeight = 1024;
