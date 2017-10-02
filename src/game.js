@@ -76,7 +76,7 @@ class Board extends actor.Actor {
 
     this.addChild(gfx);
 
-    var grass = new PIXI.Sprite.fromImage('images/grass.png');
+    var grass = new PIXI.Sprite(game.resources.grass.texture);
     grass.y = 920;
     this.addChild(grass);
 
@@ -158,8 +158,8 @@ class Board extends actor.Actor {
   reset() {
     this.fairy.position.x = 80;
     this.evil.x = 50;
-    if (game.sounds.start)
-      game.sounds.start.play();
+    if (game.resources.snd_start)
+      game.resources.snd_start.sound.play();
     this.state = 'playing';
   }
 
@@ -170,15 +170,15 @@ class Board extends actor.Actor {
   }
 
   correct() {
-    if (game.sounds.success)
-      game.sounds.success.play();
+    if (game.resources.snd_success)
+      game.resources.snd_success.sound.play();
     this.fairy.setState('jump');
     this.state = 'anim';
     setTimeout(() => this.state = 'playing', 500);
   }
   wrong() {
-    if (game.sounds.fail)
-      game.sounds.fail.play();
+    if (game.resources.snd_fail)
+      game.resources.snd_fail.sound.play();
     this.evil.setState('jump');
     this.state = 'anim';
     setTimeout(() => this.state = 'playing', 500);
@@ -188,10 +188,10 @@ class Board extends actor.Actor {
 
   win() {
     this.state = 'finished';
-    if (game.sounds.win)
-      game.sounds.win.play();
-    if (game.sounds.horse)
-      game.sounds.horse.play();
+    if (game.resources.snd_win)
+      game.resources.snd_win.sound.play();
+    if (game.resources.snd_horse)
+      game.resources.snd_horse.sound.play();
 
     game.hearts(768/2, 800/3);
     setTimeout(() => this.reset(), 5000);
@@ -199,10 +199,10 @@ class Board extends actor.Actor {
 
   fail() {
     this.state = 'finished';
-    if (game.sounds.alert)
-      game.sounds.alert.play();
-    if (game.sounds.haha)
-      game.sounds.haha.play();
+    if (game.resources.snd_alert)
+      game.resources.snd_alert.sound.play();
+    if (game.resources.snd_haha)
+      game.resources.snd_haha.sound.play();
 
     game.rain();
     setTimeout(() => this.reset(), 7000);
@@ -340,19 +340,19 @@ class Menu extends actor.Actor {
   constructor() {
     super();
 
-    this.logo = new PIXI.Sprite.fromImage('images/logo.png');
+    this.logo = new PIXI.Sprite(game.resources.logo.texture);
     this.logo.x = 384;
     this.logo.y = 180;
     this.logo.anchor.set(0.5, 0.5);
 
     this.addChild(this.logo);
 
-    var grass = new PIXI.Sprite.fromImage('images/grass.png');
+    var grass = new PIXI.Sprite(game.resources.grass.texture);
     grass.y = 920;
     this.addChild(grass);
 
 
-    var btn1 = new PIXI.Sprite.fromImage('images/mode1.png');
+    var btn1 = new PIXI.Sprite(game.resources.mode1.texture);
     btn1.x = 384-16-128;
     btn1.y = 450;
     btn1.anchor.set(0.5, 0.5);
@@ -362,7 +362,7 @@ class Menu extends actor.Actor {
 
     this.addChild(btn1);
 
-    var btn2 = new PIXI.Sprite.fromImage('images/mode2.png');
+    var btn2 = new PIXI.Sprite(game.resources.mode2.texture);
     btn2.x = 384+16+128;
     btn2.y = 450;
     btn2.anchor.set(0.5, 0.5);
@@ -372,7 +372,7 @@ class Menu extends actor.Actor {
 
     this.addChild(btn2);
 
-    var btn3 = new PIXI.Sprite.fromImage('images/mode_glade.png');
+    var btn3 = new PIXI.Sprite(game.resources.mode_glade.texture);
     btn3.x = 384;
     btn3.y = 650;
     btn3.anchor.set(0.5, 0.5);
@@ -395,10 +395,10 @@ class Glade extends actor.Actor {
   constructor() {
     super();
 
-    var glade = new PIXI.Sprite.fromImage('images/glade.png');
+    var glade = new PIXI.Sprite(game.resources.glade.texture);
     this.addChild(glade);
 
-    var back = new PIXI.Sprite.fromImage('images/back.png');
+    var back = new PIXI.Sprite(game.resources.back.texture);
     back.interactive = true;
     back.on('pointerdown', () => game.play(new Menu()));
     this.addChild(back);
@@ -406,34 +406,63 @@ class Glade extends actor.Actor {
   }
 }
 
-class Game {
+class Loader extends actor.Actor {
+
+  constructor() {
+    super();
+
+    var style = {
+      fontFamily: 'Encode Sans Expanded',
+      fontSize: 32,
+      fontWeight: 900,
+      fill: 'yellow',
+    };
 
 
-  load() {
+    this.text = new PIXI.Text('Loading', style);
+    this.text.x = 384;
+    this.text.y = 480;
+    this.text.anchor.set(0.5, 0.5);
+    this.addChild(this.text);
 
     // TODO: no real need to reassign these? Just use loader?
 
-    this.sounds = {};
-    var sounds = [
-      {name:"start", url:"./sounds/322929__rhodesmas__success-04.m4a" },
-      {name:"win", url:"./sounds/320653__rhodesmas__success-01.m4a" },
-      {name:"success", url:"./sounds/342751__rhodesmas__coins-purchase-3.m4a" },
-      {name:"alert", url:"./sounds/380265__rhodesmas__alert-02.m4a" },
-      {name:"fail", url:"./sounds/342756__rhodesmas__failure-01.m4a" },
-      {name:"haha", url:"./sounds/219110__zyrytsounds__evil-laugh.m4a" },
-      {name:"horse", url:"./sounds/59569__3bagbrew__horse.m4a" },
+    const loader = PIXI.loader;
 
-    ];
-    PIXI.loader.add(sounds).load((_, resources) => {
+    loader.add("snd_start", "./sounds/322929__rhodesmas__success-04.m4a" ).
+      add("snd_win", "./sounds/320653__rhodesmas__success-01.m4a" ).
+      add("snd_success", "./sounds/342751__rhodesmas__coins-purchase-3.m4a" ).
+      add("snd_alert", "./sounds/380265__rhodesmas__alert-02.m4a" ).
+      add("snd_fail", "./sounds/342756__rhodesmas__failure-01.m4a" ).
+      add("snd_haha", "./sounds/219110__zyrytsounds__evil-laugh.m4a" ).
+      add("snd_horse", "./sounds/59569__3bagbrew__horse.m4a" ).
+      add("grass", "images/grass.png").
+      add("glade", "images/glade.png").
+      add("back", "images/back.png").
+      add("mode1", "images/mode1.png").
+      add("mode2", "images/mode2.png").
+      add("mode_glade", "images/mode_glade.png").
+      add("logo", "images/logo.png")
 
-      sounds.forEach( s => this.sounds[s.name] = resources[s.name].sound );
 
-      //this.sounds.success.volume = 0.5;
+      ;
+
+    loader.onProgress.add((a) => {
+      this.text.text = 'Loading '+a.progress.toFixed(0)+'%';
+    });
+    loader.load((loader, resources) => {
+      game.resources = resources;
+      menu = new Menu();
+      game.play(menu);
     });
   }
 
+
+}
+
+class Game {
+
   constructor() {
-    this.load();
 
     var targetWidth = 768;
     var targetHeight = 1024;
@@ -529,8 +558,9 @@ class Game {
 
 
 var game = new Game();
+var menu = null;
 game.update();
 
 
 //game.play(new Board3());
-game.play(new Menu());
+game.play(new Loader());
