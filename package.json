@@ -1,7 +1,7 @@
 {
   "name": "mathsmina",
   "version": "1.0.0",
-  "description": "Sounds from SFX for games/apps pack by https://freesound.org/people/rhodesmas/",
+  "description": "A simple HTML5 maths game",
   "main": "game.js",
   "dependencies": {
     "pixi-particles": "^2.1.6",
@@ -13,9 +13,6 @@
   "devDependencies": {
     "webpack": "^3.6.0"
   },
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
-  "author": "",
-  "license": "ISC"
+  "author": "Gunnar Aastrand Grimnes <gromgull@gmail.com>",
+  "license": "MIT"
 }

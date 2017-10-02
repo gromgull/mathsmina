@@ -14,10 +14,12 @@ WebFont.load({
 });
 
 
-class Board extends PIXI.Container {
+class Board extends actor.Actor {
 
   constructor() {
     super();
+
+    this.actors = [];
     var board = this;
     var i;
     this.numbers = [];
@@ -74,7 +76,7 @@ class Board extends PIXI.Container {
 
     this.addChild(gfx);
 
-    var grass = new PIXI.Sprite.fromImage('images/grass.png');
+    var grass = new PIXI.Sprite(game.resources.grass.texture);
     grass.y = 920;
     this.addChild(grass);
 
@@ -83,18 +85,19 @@ class Board extends PIXI.Container {
     this.evil = new actor.SVGActor(evilSVG, {
       idle: {
         head: {
-          rotation: t => 0.1*Math.sin(t*0.001)
+          rotation: ({t}) => 0.1*Math.sin(t*0.001)
         },
         lowerbody: {
-          rotation: t => 0.1*Math.sin(t*0.0012),
-          position: (t, _, p, o) => new PIXI.Point(p.x, o.y+10*Math.sin(t*0.003))
+          rotation: ({t}) => 0.1*Math.sin(t*0.0012),
+          y: ({t, original}) => original+10*Math.sin(t*0.003)
         }
       },
       jump: {
         _duration: 500,
         _next: 'idle',
-        rotation: t => 0.2*Math.sin(0.001*t*5*Math.PI/0.5),
-        position: (t, e, p, o) => new PIXI.Point(p.x+e*60/0.5, o.y-10*Math.sin(10*Math.PI*t/500))
+        rotation: ({state_t}) => 0.2*Math.sin(0.001*state_t*5*Math.PI/0.5),
+        position: ({state_t, delta, current, original}) => new PIXI.Point(current.x+delta*60/0.5,
+                                                                          original.y-10*Math.sin(10*Math.PI*state_t/500))
       }
     }, {
       scale: new PIXI.Point(0.4, 0.4),
@@ -102,23 +105,24 @@ class Board extends PIXI.Container {
       x: 50,
     });
     this.addChild(this.evil);
-    game.actors.push(this.evil);
+    this.actors.push(this.evil);
 
     var fairySVG = require('pixi-svg-loader!../images/fairy.svg');
     this.fairy = new actor.SVGActor(fairySVG, {
       idle: {
         lwing: {
-          rotation: t => 0.3*Math.sin(t*0.01)
+          rotation: ({t}) => 0.3*Math.sin(t*0.01)
         },
         rwing: {
-          rotation: t => 0.3*Math.cos(t*0.01)
+          rotation: ({t}) => 0.3*Math.cos(t*0.01)
         },
       },
       jump: {
         _duration: 500,
         _next: 'idle',
-        rotation: t => 0.001*t*2*Math.PI/0.5,
-        position: (t, e, p, o) => new PIXI.Point(p.x+e*60/0.5, o.y-100*Math.sin(Math.PI*t/500))
+        rotation: ({state_t}) => 0.001*state_t*2*Math.PI/0.5,
+        position: ({state_t, delta, current, original}) => new PIXI.Point(current.x+delta*60/0.5,
+                                                                          original.y-100*Math.sin(Math.PI*state_t/500))
       },
 
     }, {
@@ -128,16 +132,16 @@ class Board extends PIXI.Container {
     });
 
     this.addChild(this.fairy);
-    game.actors.push(this.fairy);
+    this.actors.push(this.fairy);
 
     var unicornSVG = require('pixi-svg-loader!../images/unicorn.svg');
     this.unicorn = new actor.SVGActor(unicornSVG, {
       idle: {
         tail: {
-          rotation: t => 0.3*Math.sin(t*0.001)
+          rotation: ({t}) => 0.3*Math.sin(t*0.001)
         },
         head: {
-          rotation: t => 0.2*Math.sin(t*0.0003)
+          rotation: ({t}) => 0.2*Math.sin(t*0.0003)
         }
       }
     });
@@ -146,7 +150,7 @@ class Board extends PIXI.Container {
     this.unicorn.y = 880;
     this.unicorn.x = 768-this.unicorn.width/2;
     this.addChild(this.unicorn);
-    game.actors.push(this.unicorn);
+    this.actors.push(this.unicorn);
 
     this.reset();
   }
@@ -154,8 +158,8 @@ class Board extends PIXI.Container {
   reset() {
     this.fairy.position.x = 80;
     this.evil.x = 50;
-    if (game.sounds.start)
-      game.sounds.start.play();
+    if (game.resources.snd_start)
+      game.resources.snd_start.sound.play();
     this.state = 'playing';
   }
 
@@ -166,15 +170,15 @@ class Board extends PIXI.Container {
   }
 
   correct() {
-    if (game.sounds.success)
-      game.sounds.success.play();
+    if (game.resources.snd_success)
+      game.resources.snd_success.sound.play();
     this.fairy.setState('jump');
     this.state = 'anim';
     setTimeout(() => this.state = 'playing', 500);
   }
   wrong() {
-    if (game.sounds.fail)
-      game.sounds.fail.play();
+    if (game.resources.snd_fail)
+      game.resources.snd_fail.sound.play();
     this.evil.setState('jump');
     this.state = 'anim';
     setTimeout(() => this.state = 'playing', 500);
@@ -184,21 +188,24 @@ class Board extends PIXI.Container {
 
   win() {
     this.state = 'finished';
-    if (game.sounds.win)
-      game.sounds.win.play();
-    if (game.sounds.horse)
-      game.sounds.horse.play();
+    if (game.resources.snd_win)
+      game.resources.snd_win.sound.play();
+    if (game.resources.snd_horse)
+      game.resources.snd_horse.sound.play();
+
+    if (!localStorage.unicorns) localStorage.unicorns = 0;
+    localStorage.unicorns = parseInt(localStorage.unicorns,10) + 1;
 
     game.hearts(768/2, 800/3);
-    setTimeout(() => this.reset(), 5000);
+    setTimeout(() => game.play(menu), 5000);
   }
 
   fail() {
     this.state = 'finished';
-    if (game.sounds.alert)
-      game.sounds.alert.play();
-    if (game.sounds.haha)
-      game.sounds.haha.play();
+    if (game.resources.snd_alert)
+      game.resources.snd_alert.sound.play();
+    if (game.resources.snd_haha)
+      game.resources.snd_haha.sound.play();
 
     game.rain();
     setTimeout(() => this.reset(), 7000);
@@ -286,7 +293,6 @@ class Board2 extends Board {
       t.style.fill='white';
       game.stars(t.x, t.y);
       this.correct();
-      this.target = this.targets.pop();
       this.next();
     } else {
       this.wrong();
@@ -296,34 +302,220 @@ class Board2 extends Board {
 }
 
 
-class Game {
+class Board3 extends Board2 {
+  constructor() {
+    super();
+
+    this.Y = utils.choice([-10,-9,-8,-3,-2,-1,
+                            10, 9, 8, 3, 2, 1]);
+
+    console.log(this.Y);
+    this.next();
+  }
+
+  next() {
+    if (!this.Y) return;
+
+    let Xs = this.numbers.filter(n => n.style.fill == 'white').map(n => n.num);
+    utils.shuffle(Xs);
+    let x = null;
+    while ( true ) {
+      x = Xs.pop();
+      this.target = x + this.Y;
+      let i = this.targets.indexOf( this.target );
+      if ( i != -1 ) {
+        this.targets.splice(i, 1);
+        break;
+      }
+    }
+    console.log('x', x, 'Y', this.Y);
+    this.text.text = 'Wo ist '+(1+x)+' '+(this.Y>0?('+ '+this.Y):('- '+(-this.Y)))+'?';
+
+    game.speak(''+(1+x)+ (this.Y>0 ? ' pluss ' : ' minus ') + '' + Math.abs(this.Y) );
+
+  }
+
+}
 
 
-  load() {
+
+
+class Menu extends actor.Actor {
+
+
+  constructor() {
+    super();
+
+    this.logo = new PIXI.Sprite(game.resources.logo.texture);
+    this.logo.x = 384;
+    this.logo.y = 180;
+    this.logo.anchor.set(0.5, 0.5);
+
+    this.addChild(this.logo);
+
+    var grass = new PIXI.Sprite(game.resources.grass.texture);
+    grass.y = 920;
+    this.addChild(grass);
+
+
+    var btn1 = new PIXI.Sprite(game.resources.mode1.texture);
+    btn1.x = 384-16-128;
+    btn1.y = 450;
+    btn1.anchor.set(0.5, 0.5);
+
+    btn1.interactive = true;
+    btn1.on('pointerdown', () => game.play(new Board2()) );
+
+    this.addChild(btn1);
+
+    var btn2 = new PIXI.Sprite(game.resources.mode2.texture);
+    btn2.x = 384+16+128;
+    btn2.y = 450;
+    btn2.anchor.set(0.5, 0.5);
+
+    btn2.interactive = true;
+    btn2.on('pointerdown', () => game.play(new Board3()) );
+
+    this.addChild(btn2);
+
+    var btn3 = new PIXI.Sprite(game.resources.mode_glade.texture);
+    btn3.x = 384;
+    btn3.y = 650;
+    btn3.anchor.set(0.5, 0.5);
+
+    btn3.interactive = true;
+    btn3.on('pointerdown', () => game.play(new Glade()) );
+
+    this.addChild(btn3);
+
+  }
+
+  update(t) {
+    this.logo.y = 180 + Math.sin(t*0.001)*10;
+    this.logo.rotation = Math.sin(t*0.0005)/20;
+  }
+}
+
+class Glade extends actor.Actor {
+
+  constructor() {
+    super();
+
+    this.actors = [];
+
+    var glade = new PIXI.Sprite(game.resources.glade.texture);
+    this.addChild(glade);
+
+    var back = new PIXI.Sprite(game.resources.back.texture);
+    back.interactive = true;
+    back.on('pointerdown', () => game.play(new Menu()));
+    this.addChild(back);
+
+    var unicornSVG = require('pixi-svg-loader!../images/unicorn.svg');
+    console.log('unicorns', localStorage.unicorns);
+
+
+    for (var i=0; i< 20 ; i++) {
+      let unicorn = new actor.SVGActor(unicornSVG, {
+        idle: {
+          tail: {
+            rotation: ({t, thing}) => 0.3*Math.sin(thing.toffset+t*0.001)
+          },
+          head: {
+            rotation: ({t, thing}) => 0.2*Math.sin(thing.toffset+t*0.0003)
+          }
+        }
+      });
+      unicorn.toffset = Math.random()*2*Math.PI;
+      unicorn.y = 600+Math.random()*300;
+      var scale = (unicorn.y - 600)/300;
+      unicorn.scale.x = ( Math.random()>0.5?-1:1 ) * ( 0.2+0.2*scale );
+      unicorn.scale.y = 0.2+0.3*scale;
+
+      unicorn.x = 59+Math.random()*650-unicorn.width/2;
+      this.actors.push(unicorn);
+    }
+
+    this.actors.sort((a,b) => a.y - b.y);
+    this.actors.forEach(u => this.addChild(u));
+
+
+
+
+  }
+}
+
+class Loader extends actor.Actor {
+
+  constructor() {
+    super();
+
+    var style = {
+      fontFamily: 'Encode Sans Expanded',
+      fontSize: 32,
+      fontWeight: 900,
+      fill: 'yellow',
+    };
+
+
+    this.text = new PIXI.Text('Loading', style);
+    this.text.x = 384;
+    this.text.y = 480;
+    this.text.anchor.set(0.5, 0.5);
+    this.addChild(this.text);
 
     // TODO: no real need to reassign these? Just use loader?
 
-    this.sounds = {};
-    var sounds = [
-      {name:"start", url:"./sounds/322929__rhodesmas__success-04.wav" },
-      {name:"win", url:"./sounds/320653__rhodesmas__success-01.wav" },
-      {name:"success", url:"./sounds/342751__rhodesmas__coins-purchase-3.wav" },
-      {name:"alert", url:"./sounds/380265__rhodesmas__alert-02.wav" },
-      {name:"fail", url:"./sounds/342756__rhodesmas__failure-01.wav" },
-      {name:"haha", url:"./sounds/219110__zyrytsounds__evil-laugh.wav" },
-      {name:"horse", url:"./sounds/59569__3bagbrew__horse.wav" },
+    const loader = PIXI.loader;
 
-    ];
-    PIXI.loader.add(sounds).load((_, resources) => {
+    loader.add("snd_start", "./sounds/322929__rhodesmas__success-04.m4a" ).
+      add("snd_win", "./sounds/320653__rhodesmas__success-01.m4a" ).
+      add("snd_success", "./sounds/342751__rhodesmas__coins-purchase-3.m4a" ).
+      add("snd_alert", "./sounds/380265__rhodesmas__alert-02.m4a" ).
+      add("snd_fail", "./sounds/342756__rhodesmas__failure-01.m4a" ).
+      add("snd_haha", "./sounds/219110__zyrytsounds__evil-laugh.m4a" ).
+      add("snd_horse", "./sounds/59569__3bagbrew__horse.m4a" ).
+      add("grass", "images/grass.png").
+      add("glade", "images/glade.png").
+      add("back", "images/back.png").
+      add("mode1", "images/mode1.png").
+      add("mode2", "images/mode2.png").
+      add("mode_glade", "images/mode_glade.png").
+      add("logo", "images/logo.png")
 
-      sounds.forEach( s => this.sounds[s.name] = resources[s.name].sound );
 
-      //this.sounds.success.volume = 0.5;
+      ;
+
+    loader.onProgress.add((a) => {
+      this.text.text = 'Loading '+a.progress.toFixed(0)+'%';
+    });
+    loader.load((loader, resources) => {
+      game.resources = resources;
+      menu = new Menu();
+      game.play(menu);
     });
   }
 
+
+}
+
+class Game {
+
+  speak(text) {
+    if (!this.voice) return;
+    var utt = new SpeechSynthesisUtterance(text);
+    utt.voiceURI = this.voice.voiceURI;
+    utt.lang = this.voice.lang;
+    speechSynthesis.speak(utt);
+  }
+
   constructor() {
-    this.load();
+    if (window.speechSynthesis)
+      speechSynthesis.onvoiceschanged = () => {
+        game.voice = speechSynthesis.getVoices().filter(v => v.lang == 'de-DE' || v.lang == 'de_DE')[0];
+        //alert('voice ' + game.voice.name + '/' + game.voice.lang );
+      };
+
 
     var targetWidth = 768;
     var targetHeight = 1024;
@@ -405,13 +597,24 @@ class Game {
 	// this.app.renderer.render(this.main);
   }
 
+  play(thing) {
+    this.actors = [];
+    if (thing.actors)
+      this.actors = this.actors.concat(thing.actors);
+    this.main.removeChildren();
+    this.main.addChild(thing);
+    this.actors.push(thing);
+
+  }
+
 }
 
+if ('unicorns' in localStorage && localStorage.unicorns[0] == '0') localStorage.unicorns = 4; // fix a bug where we did string-concat +1
 
 var game = new Game();
+var menu = null;
 game.update();
 
-var b = new Board2();
 
-game.main.addChild(b);
-game.actors.push(b);
+//game.play(new Board3());
+game.play(new Loader());

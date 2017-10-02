@@ -6,6 +6,10 @@ function shuffle(a) {
   }
 }
 
+function choice(a) {
+  return a[Math.floor(Math.random()*a.length)];
+}
+
 module.exports = {
-  shuffle
+  shuffle, choice
 };
