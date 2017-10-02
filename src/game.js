@@ -415,7 +415,7 @@ class Glade extends actor.Actor {
     console.log('unicorns', localStorage.unicorns);
 
 
-    for (var i=0; i< 20 ; i++) {
+    for (var i=0; i< parseInt(localStorage.unicorns, 10) ; i++) {
       let unicorn = new actor.SVGActor(unicornSVG, {
         idle: {
           tail: {
@@ -609,7 +609,7 @@ class Game {
 
 }
 
-if (localStorage.unicorns[0] == '0') localStorage.unicorns = 4; // fix a bug where we did string-concat +1
+if ('unicorns' in localStorage && localStorage.unicorns[0] == '0') localStorage.unicorns = 4; // fix a bug where we did string-concat +1
 
 var game = new Game();
 var menu = null;
