@@ -609,7 +609,7 @@ class Game {
 
 }
 
-if (localStorage.unicorns[0] == '0') localStorage.unicorns = 4; // fix a bug where we did string-concat +1
+if ('unicorns' in localStorage && localStorage.unicorns[0] == '0') localStorage.unicorns = 4; // fix a bug where we did string-concat +1
 
 var game = new Game();
 var menu = null;
