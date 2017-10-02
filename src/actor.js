@@ -76,7 +76,6 @@ class SVGActor extends Actor {
                              x: val.position.x,
                              y: val.position.y,
                              position: new PIXI.Point(val.position.x, val.position.y) }; // TODO: transform, scale etc.
-          console.log(prop);
           save_defaults(val, defaults[prop]);
         }
       }
@@ -90,6 +89,8 @@ class SVGActor extends Actor {
   }
 
   update(t, delta) {
+
+    let self = this;
 
     if (this.changeTo) {
       this.state = this.changeTo;
@@ -107,7 +108,7 @@ class SVGActor extends Actor {
 
     function doit(anim, prop, thing, defaults) {
       if (props.indexOf(prop)!==-1) {
-        thing[prop] = anim({ t, state_t: time_in_state, delta, current: thing[prop], original: defaults[prop]});
+        thing[prop] = anim({ thing: self, t, state_t: time_in_state, delta, current: thing[prop], original: defaults[prop]});
       } else {
         if (!thing[prop]) {
           console.log("tried to animate "+prop+" of "+thing+" but it has no such part.");
