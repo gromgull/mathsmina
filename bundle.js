@@ -22019,7 +22019,7 @@ class Glade extends actor.Actor {
     console.log('unicorns', localStorage.unicorns);
 
 
-    for (var i=0; i< 20 ; i++) {
+    for (var i=0; i< parseInt(localStorage.unicorns, 10) ; i++) {
       let unicorn = new actor.SVGActor(unicornSVG, {
         idle: {
           tail: {
