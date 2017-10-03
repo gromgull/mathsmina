@@ -73,6 +73,11 @@ class Game {
 
     this.actors = [];
 
+    this.states = {};
+
+    window.onpopstate = ({state}) => {
+      this.play(this.states[state.state]);
+    };
 
   }
 
@@ -105,6 +110,11 @@ class Game {
 
   play(thing) {
     if (thing.reset) thing.reset();
+
+    let state = thing.constructor.name;
+    this.states[state] = thing;
+    window.history.pushState({state}, '', '');
+
     this.actors = [];
     if (thing.actors)
       this.actors = this.actors.concat(thing.actors);
