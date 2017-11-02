@@ -126,4 +126,4 @@ class SVGActor extends Actor {
   }
 }
 
-module.exports = { Actor, SVGActor };
+export { Actor, SVGActor };
