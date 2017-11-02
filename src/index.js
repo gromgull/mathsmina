@@ -4,6 +4,7 @@ import { game } from './game';
 import { Board2, Board3 } from './numbers';
 import { Glade } from './glade';
 
+import { ClockGame } from './clock';
 
 require('pixi-sound');
 
@@ -108,6 +109,16 @@ class Menu extends Actor {
     btn2.on('pointerdown', () => game.play(new Board3()) );
 
     this.addChild(btn2);
+
+    var btn3 = new PIXI.Sprite(game.resources.mode3.texture);
+    btn3.x = 384;
+    btn3.y = 450;
+    btn3.anchor.set(0.5, 0.5);
+
+    btn3.interactive = true;
+    btn3.on('pointerdown', () => game.play(new ClockGame()) );
+
+    this.addChild(btn3);
 
     var gladebtn = new PIXI.Sprite(game.resources.mode_glade.texture);
     gladebtn.x = 384;
