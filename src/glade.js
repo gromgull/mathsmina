@@ -1,9 +1,11 @@
 
-import { Actor } from './actor';
+import { Actor, SVGActor } from './actor';
+
+import { game } from './game';
 
 class Glade extends Actor {
 
-  constructor() {
+  constructor(menu) {
     super();
 
     this.actors = [];
@@ -13,7 +15,7 @@ class Glade extends Actor {
 
     var back = new PIXI.Sprite(game.resources.back.texture);
     back.interactive = true;
-    back.on('pointerdown', () => game.play(new Menu()));
+    back.on('pointerdown', () => game.play(menu));
     this.addChild(back);
 
     var unicornSVG = require('pixi-svg-loader!../images/unicorn.svg');
@@ -21,7 +23,7 @@ class Glade extends Actor {
 
 
     for (var i=0; i< parseInt(localStorage.unicorns, 10) ; i++) {
-      let unicorn = new actor.SVGActor(unicornSVG, {
+      let unicorn = new SVGActor(unicornSVG, {
         idle: {
           tail: {
             rotation: ({t, thing}) => 0.3*Math.sin(thing.toffset+t*0.001)
@@ -49,3 +51,5 @@ class Glade extends Actor {
 
   }
 }
+
+export { Glade };

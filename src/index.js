@@ -126,7 +126,7 @@ class Menu extends Actor {
     gladebtn.anchor.set(0.5, 0.5);
 
     gladebtn.interactive = true;
-    gladebtn.on('pointerdown', () => game.play(new Glade()) );
+    gladebtn.on('pointerdown', () => game.play(new Glade(this)) );
 
     this.addChild(gladebtn);
 
