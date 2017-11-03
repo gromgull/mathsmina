@@ -83179,11 +83179,11 @@ class ClockGame extends __WEBPACK_IMPORTED_MODULE_2__board__["default"] {
     let h1 = ((h+1) % 12) || 12;
 
     if (m===0) return h+' Uhr';
-    if (m<15) return m+' nach '+h;
     if (m==15) return ' viertel nach '+h;
-    if (m<30) return (30-m) + ' vor halb '+h1;
+    if (m<30) return m+' nach '+h;
+    //if (m<30) return (30-m) + ' vor halb '+h1;
     if (m==30) return 'halb '+h1;
-    if (m<45) return (m-30) + ' nach halb '+h1;
+    //if (m<45) return (m-30) + ' nach halb '+h1;
     if (m==45) return 'viertel vor '+h1;
     return (60-m)+' vor '+h1;
   }
