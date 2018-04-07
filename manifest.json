@@ -2,7 +2,7 @@
   "display": "standalone",
   "name": "Mina and Maths",
   "icons": [ {
-    "src": "images/logo-192.png",
+    "src": "images/icon-192.png",
     "size": "192x192"
   } ]
 }
