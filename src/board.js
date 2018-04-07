@@ -3,10 +3,11 @@ import { game } from './game';
 
 class Board extends Actor {
 
-  constructor() {
+  constructor(menu) {
     super();
 
     this.actors = [];
+    this.menu = menu;
 
     this.state = 'loading';
 
@@ -129,7 +130,7 @@ class Board extends Actor {
     localStorage.unicorns = parseInt(localStorage.unicorns,10) + 1;
 
     game.hearts(768/2, 800/3);
-    setTimeout(() => game.play(menu), 5000);
+    setTimeout(() => game.play(this.menu), 5000);
   }
 
   fail() {

@@ -73,6 +73,11 @@ class Game {
 
     this.actors = [];
 
+    this.states = {};
+
+    window.onpopstate = ({state}) => {
+      this.play(this.states[state.state]);
+    };
 
   }
 
@@ -100,11 +105,15 @@ class Game {
     this.last_time = t;
 
     this.actors.forEach(actor => actor.update(t, delta*0.001));
-	// this.app.renderer.render(this.main);
   }
 
   play(thing) {
     if (thing.reset) thing.reset();
+
+    let state = thing.constructor.name;
+    this.states[state] = thing;
+    window.history.pushState({state}, '', '');
+
     this.actors = [];
     if (thing.actors)
       this.actors = this.actors.concat(thing.actors);
