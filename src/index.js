@@ -1,7 +1,7 @@
 import { Actor } from './actor';
 import { game } from './game';
 
-import { Board2, Board3 } from './numbers';
+import { BoardMultiply, Board2, Board3 } from './numbers';
 import { Glade } from './glade';
 
 import { ClockGame } from './clock';
@@ -45,6 +45,7 @@ class Loader extends Actor {
       add("mode1", "images/mode1.png").
       add("mode2", "images/mode2.png").
       add("mode3", "images/mode3.png").
+      add("mode4", "images/mode4.png").
       add("mode_glade", "images/mode_glade.png").
       add("logo", "images/logo.png")
       ;
@@ -106,23 +107,34 @@ class Menu extends Actor {
     btn2.anchor.set(0.5, 0.5);
 
     btn2.interactive = true;
-    btn2.on('pointerdown', () => game.play(new Board3()) );
+    btn2.on('pointerdown', () => game.play(new Board3(this)) );
 
     this.addChild(btn2);
 
     var btn3 = new PIXI.Sprite(game.resources.mode3.texture);
     btn3.x = 384;
-    btn3.y = 450;
+    btn3.y = 450+128+16;
     btn3.anchor.set(0.5, 0.5);
 
     btn3.interactive = true;
-    btn3.on('pointerdown', () => game.play(new ClockGame()) );
+    btn3.on('pointerdown', () => game.play(new ClockGame(this)) );
 
     this.addChild(btn3);
 
+    var btn4 = new PIXI.Sprite(game.resources.mode4.texture);
+    btn4.x = 384;
+    btn4.y = 450;
+    btn4.anchor.set(0.5, 0.5);
+
+    btn4.interactive = true;
+    btn4.on('pointerdown', () => game.play(new BoardMultiply(this)) );
+
+    this.addChild(btn4);
+
+
     var gladebtn = new PIXI.Sprite(game.resources.mode_glade.texture);
     gladebtn.x = 384;
-    gladebtn.y = 650;
+    gladebtn.y = 450+2*128+32;
     gladebtn.anchor.set(0.5, 0.5);
 
     gladebtn.interactive = true;

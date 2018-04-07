@@ -3,8 +3,8 @@ import utils from './utils';
 import { game } from './game';
 
 class NumberBoard extends Board {
-  constructor() {
-    super();
+  constructor(menu) {
+    super(menu);
 
     var board = this;
 
@@ -89,8 +89,8 @@ class Board1 extends NumberBoard {
 
 
 class Board2 extends NumberBoard {
-  constructor() {
-    super();
+  constructor(menu) {
+    super(menu);
 
     var style = {
       fontFamily: 'Encode Sans Expanded',
@@ -152,8 +152,8 @@ class Board2 extends NumberBoard {
 
 
 class Board3 extends Board2 {
-  constructor() {
-    super();
+  constructor(menu) {
+    super(menu);
 
     this.Y = utils.choice([-10,-9,-8,-3,-2,-1,
                             10, 9, 8, 3, 2, 1]);
@@ -185,4 +185,92 @@ class Board3 extends Board2 {
 
 }
 
-export { Board1, Board2, Board3 };
+
+class BoardMultiply extends NumberBoard {
+  constructor(menu) {
+    super(menu);
+
+    var style = {
+      fontFamily: 'Encode Sans Expanded',
+      fontSize: 32,
+      fontWeight: 900,
+      fill: 'yellow',
+    };
+
+
+    this.text = new PIXI.Text('Wo ist ?', style);
+    this.text.x = 400;
+    this.text.y = 780;
+    this.text.anchor.set(0.5, 0.5);
+    this.addChild(this.text);
+
+
+  }
+
+  reset() {
+    super.reset();
+    this.numbers.forEach( n => n.style.fill = 'lightgrey' );
+
+    this.N = Array.from(Array(10).keys()).map( () => Array.from(Array(10).keys()) );
+    this.N.forEach( a => utils.shuffle(a) );
+
+    this.M = Array.from(Array(10).keys());
+    utils.shuffle(this.M);
+    this.M = this.M.slice(0,3);
+
+
+    if (this.text) this.next(); // initially not created yet!
+  }
+
+  onTextOut(t) {
+    //this.style.fill='white';
+  }
+  onTextOver(t) {
+    //this.style.fill='red';
+  }
+  onTextUp(t) {
+  }
+  onTextDown(t) {
+    this.text.text = '';
+    if (this.target == t.num) {
+      t[['red', 'yellow', 'blue'][this.i]] = true;
+      t.style.fill = this.color(t.red, t.yellow, t.blue);
+      game.stars(t.x, t.y);
+      this.correct();
+      this.next();
+    } else {
+      this.wrong();
+    }
+
+  }
+
+  color(r,y,b) {
+    if (r && y && b) return 'brown';
+    if (r && y) return 'orange';
+    if (r && b) return 'purple';
+    if (r) return 'red';
+    if (y && b) return 'green';
+    if (y) return 'yellow';
+    if (b) return 'blue';
+    return 'lightgrey';
+  }
+
+  next() {
+    setTimeout( () => this.state=='playing' && this._next(), 600 );
+  }
+  _next() {
+
+    this.i = Math.floor(Math.random()*3);
+    let m = this.M[this.i];
+    let n = this.N[m].pop();
+    this.target = (m+1) * (n+1) - 1;
+
+    this.text.text = 'Wo ist '+(1+m)+' · '+(1+n)+'?';
+
+    game.speak(''+(1+m)+ ' mal ' + (1+n) );
+
+  }
+
+}
+
+export { Board1, Board2, Board3, BoardMultiply };

@@ -105,7 +105,6 @@ class Game {
     this.last_time = t;
 
     this.actors.forEach(actor => actor.update(t, delta*0.001));
-	// this.app.renderer.render(this.main);
   }
 
   play(thing) {
